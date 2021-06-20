@@ -8,15 +8,29 @@ app.use(express.json())
 //that can be read using request.body
 
 
+//customer morgan token that takes the body of a request (post usually has a body)
+//and returns it to be printed by the morgan request handler below
 morgan.token('content', function getContent(request) {
   const requestBody = JSON.stringify(request.body)
   return requestBody
 })
 
-app.use(morgan(':method :url :status :res[content-length] - :response-time ms :content'))
+
+//morgan custom request handler that uses the custom token and prints 
+//important request information
+app.use(morgan(function (tokens, req, res) {
+  return [
+    tokens.method(req, res),
+    tokens.url(req, res),
+    tokens.status(req, res),
+    tokens.res(req, res, 'content-length'), '-',
+    tokens['response-time'](req, res), 'ms',
+    tokens.content(req)
+  ].join(' ')
+}))
 
 
-
+//people list storing name and numbers
 let people = [
   {
     id:1,
@@ -40,10 +54,14 @@ let people = [
   }
 ]
 
+
+//default route handler that displays hello world in HTML format
 app.get('/' , (request,response) => {
 	response.send("<h1> Hello World </h1>")
 })
 
+
+//info route handler displays information from the people list in HTML format
 app.get('/info', (request,response) => {
   const date = new Date()
   response.send(`<h1>Phonebook has info for ${people.length} people</h1>
@@ -52,6 +70,10 @@ app.get('/info', (request,response) => {
 
 })
 
+
+//gets a specific person object from the people list 
+//uses Number to convert string to integer to find the person in 
+//the people list
 app.get('/api/people/:id', (request,response) => {
   console.log("request params: " , request.params)
   const id = Number(request.params.id)
@@ -67,12 +89,21 @@ app.get('/api/people/:id', (request,response) => {
 
 })
 
+
+//used to generate an id for the json list of people and numbers
+//finds the max id in the list adds one and returns it
 const generateId = () => {
 
   const maxId = people.length >0 ? Math.max(...people.map((person)=>person.id)) : 0
   return maxId+1
 
 } 
+
+
+//route for post request made to server
+//checks if the name or number is present if so returns 
+//if not it adds it to the list of people
+//request.body can only be used because of the express.json()
 app.post('/api/people', (request,response) => {
 
   const body = request.body
@@ -106,6 +137,9 @@ app.post('/api/people', (request,response) => {
 })
 
 
+//route handling a delete request
+//finds the person in the list and deletes returning a 204 status
+//if person is not present it returns a 404 status
 app.delete('/api/people/:id' , (request,response) => {
 
   const id = Number(request.params.id)
@@ -124,6 +158,8 @@ app.delete('/api/people/:id' , (request,response) => {
 
 })
 
+
+//returns jsonified list of people in the people list
 app.get('/api/people', (request,response) => {
 	response.json(people)
 })
@@ -134,9 +170,12 @@ const unknownEndpoints = (request,response) => {
   response.status(404).send({error:"unknown endpoint"})
 }
 
+
+
 app.use(unknownEndpoints)
 
-const PORT = 3023
+
+const PORT = 3025
 app.listen(PORT , () => {
 	console.log(`server is running on port ${PORT}`)
 })
