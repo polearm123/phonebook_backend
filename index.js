@@ -1,7 +1,9 @@
 const express = require('express')
 const morgan = require('morgan')
+const cors = require('cors')
 const app = express()
 app.use(express.json())
+app.use(cors())
 
 //middleware - express json parse
 //takes the request and turns it into a json object
@@ -175,7 +177,7 @@ const unknownEndpoints = (request,response) => {
 app.use(unknownEndpoints)
 
 
-const PORT = 3025
+const PORT = process.env.PORT || 3001
 app.listen(PORT , () => {
 	console.log(`server is running on port ${PORT}`)
 })
