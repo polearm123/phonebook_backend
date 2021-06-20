@@ -1,6 +1,21 @@
 const express = require('express')
+const morgan = require('morgan')
 const app = express()
 app.use(express.json())
+
+//middleware - express json parse
+//takes the request and turns it into a json object
+//that can be read using request.body
+
+
+morgan.token('content', function getContent(request) {
+  const requestBody = JSON.stringify(request.body)
+  return requestBody
+})
+
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :content'))
+
+
 
 let people = [
   {
@@ -37,7 +52,7 @@ app.get('/info', (request,response) => {
 
 })
 
-app.get('/api/persons/:id', (request,response) => {
+app.get('/api/people/:id', (request,response) => {
   console.log("request params: " , request.params)
   const id = Number(request.params.id)
   
@@ -58,7 +73,7 @@ const generateId = () => {
   return maxId+1
 
 } 
-app.post('/api/persons', (request,response) => {
+app.post('/api/people', (request,response) => {
 
   const body = request.body
 
@@ -91,7 +106,7 @@ app.post('/api/persons', (request,response) => {
 })
 
 
-app.delete('/api/persons/:id' , (request,response) => {
+app.delete('/api/people/:id' , (request,response) => {
 
   const id = Number(request.params.id)
   console.log("id is: " , id)
@@ -109,11 +124,19 @@ app.delete('/api/persons/:id' , (request,response) => {
 
 })
 
-app.get('/api/persons', (request,response) => {
+app.get('/api/people', (request,response) => {
 	response.json(people)
 })
 
-const PORT = 3010
+
+//middleware that handles request that has no route handler
+const unknownEndpoints = (request,response) => {
+  response.status(404).send({error:"unknown endpoint"})
+}
+
+app.use(unknownEndpoints)
+
+const PORT = 3023
 app.listen(PORT , () => {
 	console.log(`server is running on port ${PORT}`)
 })
