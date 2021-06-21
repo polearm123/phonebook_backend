@@ -1,11 +1,18 @@
 const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
+const Person = require('./models/person')
+require('dotenv').config()
 const app = express()
 
 app.use(express.json())
 app.use(cors())
 app.use(express.static('build'))
+
+//imports the person module from the models directory
+
+
+
 
 //middleware - express json parse
 //takes the request and turns it into a json object
@@ -32,31 +39,6 @@ app.use(morgan(function (tokens, req, res) {
     tokens.content(req)
   ].join(' ')
 }))
-
-
-//people list storing name and numbers
-let people = [
-  {
-    id:1,
-    name:"Arto",
-    number:"11111"
-  },
-  {
-    id:2,
-    name:"Spe",
-    number:"1231923"
-  },
-  {
-    id:3,
-    name:"Juan",
-    number:"33333"
-  },
-  {
-    id:4,
-    name:"Henriq",
-    number:"22222"
-  }
-]
 
 
 //default route handler that displays hello world in HTML format
@@ -165,7 +147,10 @@ app.delete('/api/people/:id' , (request,response) => {
 
 //returns jsonified list of people in the people list
 app.get('/api/people', (request,response) => {
-	response.json(people)
+  Person.find({}).then(people => {
+    response.json(people)
+  })
+	
 })
 
 
@@ -179,7 +164,7 @@ const unknownEndpoints = (request,response) => {
 app.use(unknownEndpoints)
 
 
-const PORT = process.env.PORT || 3068
+const PORT = process.env.PORT
 app.listen(PORT , () => {
 	console.log(`server is running on port ${PORT}`)
 })
