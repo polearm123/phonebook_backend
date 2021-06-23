@@ -43,7 +43,7 @@ app.use(morgan(function (tokens, req, res) {
 
 //default route handler that displays hello world in HTML format
 app.get('/' , (request,response) => {
-	response.send("<h1> Hello World </h1>")
+  response.send('<h1> Hello World </h1>')
 })
 
 
@@ -52,14 +52,12 @@ app.get('/api/people/info', (request,response,next) => {
   const date = new Date()
   Person.find({}).countDocuments().then(infoResponse => {
     response.send(`<h1>Phonebook has info for ${infoResponse} people</h1>
-    <p>${date}</p>`
-  )
+    <p>${date}</p>`)
   }).catch(error =>
-    {mongoose.connection.close()
+  {mongoose.connection.close()
     next(error)
   })
-    
-  })
+})
 
 
 //retrieves a specific document from the database corresponding to the
@@ -67,7 +65,7 @@ app.get('/api/people/info', (request,response,next) => {
 app.get('/api/people/:id', (request,response,next) => {
 
   Person.findById(request.params.id).then(person => {
-    if(note){
+    if(person){
       response.json(person)
     }else{
       response.status(404).end()
@@ -89,9 +87,9 @@ app.put('/api/people/:id',(request,response,next) => {
     name: body.name
   }
 
-  Person.findByIdAndUpdate(body._id,updatedPerson,{new:true}).then(updatedResponse => {
-    console.log("found a match", updatedResponse)
-    response.json(updatedResponse,{error:`${updatedResponse.name}'s number has been changed successfully`})
+  Person.findByIdAndUpdate(body._id,updatedPerson,{ new:true }).then(updatedResponse => {
+    console.log('found a match', updatedResponse)
+    response.json(updatedResponse,{ error:`${updatedResponse.name}'s number has been changed successfully` })
   }).catch(error => next(error))
 
 })
@@ -109,10 +107,10 @@ app.post('/api/people', (request,response,next) => {
   //return page not found 404
   console.log(`number is ${body.number} name is ${body.name}`)
   if(body.name === undefined || body.number === undefined){
-    console.log("person could not be added request body empty")
+    console.log('person could not be added request body empty')
     return response.status(404).end()
   }
-  
+
   const newPerson = new Person({
     name:body.name,
     number:body.number
@@ -122,10 +120,10 @@ app.post('/api/people', (request,response,next) => {
     response.json(savedPerson)
   }).catch(error => next(error))
 
-   
+
 })
 
-    
+
 //route handling a delete request
 //finds the person in the list and deletes returning a 204 status
 //if person is not present it returns a 404 status
@@ -140,19 +138,18 @@ app.delete('/api/people/:id' , (request,response,next) => {
 
 
 //returns jsonified list of people in the people list
-app.get('/api/people', (request,response) => {
+app.get('/api/people', (request,response,next) => {
   Person.find({}).then(people => {
     response.json(people)
   }).catch(error => {
     next(error)
   })
-	
 })
 
 
 //middleware that handles request that has no route handler
 const unknownEndpoints = (request,response) => {
-  response.status(404).send({error:"unknown endpoint"})
+  response.status(404).send({ error:'unknown endpoint' })
 }
 app.use(unknownEndpoints)
 
@@ -163,11 +160,11 @@ const errorHandler = (error,request,response,next) => {
   console.log(error.message)
 
   if(error.name==='CastError'){
-    return response.status(400).send({error:error.message})
+    return response.status(400).send({ error:error.message })
   }else if(error.name==='ValidationError'){
-    return response.status(400).send({error:error.message})
+    return response.status(400).send({ error:error.message })
   }else if(error.name==='CreateError'){
-    return response.status(400).send({error:error.message})
+    return response.status(400).send({ error:error.message })
   }
 }
 app.use(errorHandler)
@@ -178,5 +175,5 @@ app.use(errorHandler)
 //back-end listens on port stated waiting for axios requests!
 const PORT = process.env.PORT
 app.listen(PORT , () => {
-	console.log(`server is running on port ${PORT}`)
+  console.log(`server is running on port ${PORT}`)
 })
