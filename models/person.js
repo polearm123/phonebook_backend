@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 require('dotenv').config()
 
 //url for database
-const url = process.env.MONGODB_URL
+const url = process.env.MONGODB_URI
 
 console.log("connecting to url", url)
 
@@ -16,9 +16,18 @@ mongoose.connect(url,mongoose.connect(url, { useNewUrlParser: true, useUnifiedTo
 )
 
 //Schema/structure for the model that will be attached to a document
+//also uses VALIDATION to confirm the data meets the required format before
+//adding to the database
 const personSchema = mongoose.Schema({
-    name:String,
-    number:Number
+    name:{
+        type:String,
+        minLength:3,
+        required:true
+    },
+    number:{
+        type:Number,
+        required:true
+    }
 })
 
 

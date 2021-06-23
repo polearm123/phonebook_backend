@@ -4,7 +4,7 @@ const cors = require('cors')
 
 //imports the person module from the models directory
 const Person = require('./models/person')
-const { mongo } = require('mongoose')
+const mongoose = require('mongoose')
 require('dotenv').config()
 const app = express()
 
@@ -90,59 +90,41 @@ app.put('/api/people/:id',(request,response,next) => {
 
   Person.findByIdAndUpdate(body._id,updatedPerson,{new:true}).then(updatedResponse => {
     console.log("found a match", updatedResponse)
-    response.json(updatedResponse)
+    response.json(updatedResponse,{error:`${updatedResponse.name}'s number has been changed successfully`})
   }).catch(error => next(error))
 
 })
+
 
 //route for post request made to server
 //checks if the name or number is present if so returns 
 //if not it adds it to the list of people
 //request.body can only be used because of the express.json()
-app.post('/api/people', (request,response) => {
+app.post('/api/people', (request,response,next) => {
 
   const body = request.body
 
-  console.log(`number is ${body.number} name is $`)
-  if(body.name === undefined){
+  //if there is no name or number attached to the body of the request
+  //return page not found 404
+  console.log(`number is ${body.number} name is ${body.name}`)
+  if(body.name === undefined || body.number === undefined){
     console.log("person could not be added request body empty")
     return response.status(404).end()
   }
   
-  
-  //if either the name or number exist an error is sent
-  //in a response object
-  Person.find({$or: [{name:body.name},{number:body.number}]}
-  ).then(foundPerson => {
-    console.log("response from matching person" , response)
-    if(foundPerson){
-      console.log("existing person with name or number")
-      return response.status(404).json({error:"must be unique"})
-    }
-    mongoose.connection.close()
-  })
-
-
   const newPerson = new Person({
     name:body.name,
     number:body.number
   })
 
-  //save the person specified using the mongoose model
-  //to the database and close the connection
-  newPerson.save().then(result => {
-      console.log("new person saved" , newPerson)
-      return response.status(204).end()
-  }).catch(error => {
-      console.log("error in saving person",error.message)
-      // mongoose.connection.close()
-      return response.status(404).end()
-    })
-    mongoose.connection.close()
+  newPerson.save().then(savedPerson => {
+    response.json(savedPerson)
+  }).catch(error => next(error))
+
+   
 })
 
     
-
 //route handling a delete request
 //finds the person in the list and deletes returning a 204 status
 //if person is not present it returns a 404 status
@@ -179,6 +161,8 @@ const errorHandler = (error,request,response,next) => {
 
   if(error.name==='CastError'){
     return response.status(400).send({error:'malformatted id'})
+  }else if(error.name==='ValidationError'){
+    return response.status(400).json({error:error.message})
   }
 }
 app.use(errorHandler)
