@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const uniqueValidator = require('mongoose-unique-validator')
 require('dotenv').config()
 
 //url for database
@@ -22,10 +23,12 @@ const personSchema = mongoose.Schema({
     name:{
         type:String,
         minLength:3,
-        required:true
+        required:true,
+        unique:true
     },
     number:{
         type:Number,
+        minLength:8,
         required:true
     }
 })
@@ -41,6 +44,8 @@ personSchema.set('toJson', {
   
     }
   })
+
+personSchema.plugin(uniqueValidator)
 
 
 //create a model using the structure defined in the schema
