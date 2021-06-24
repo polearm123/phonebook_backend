@@ -1,20 +1,11 @@
+
+//only responsibility is to define the mongoose schema
+//which is the structure of data that is put in the database
+
 const mongoose = require('mongoose')
 const uniqueValidator = require('mongoose-unique-validator')
-require('dotenv').config()
 
-//url for database
-const url = process.env.MONGODB_URI
 
-console.log('connecting to url', url)
-
-//connect to database specified by the url
-mongoose.connect(url,mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true }).then(
-  result => {console.log('connected to mongodb')}).catch(error => { console.log('error in connecting to mongoDB', error.message)})
-)
-
-//Schema/structure for the model that will be attached to a document
-//also uses VALIDATION to confirm the data meets the required format before
-//adding to the database
 const personSchema = mongoose.Schema({
   name:{
     type:String,
